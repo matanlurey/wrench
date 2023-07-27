@@ -33,7 +33,7 @@ Common invocations:
 ./flutter/tools/gn --unopt
 
 # Build an android debug build with Vulkan enabled and Vulkan validation layers.
-./flutter/tools/gn --unopt --android --android-cpu=arm64 --enable-vulkan --enable-vulkan-validation-layers
+./flutter/tools/gn --unopt --android --android-cpu=arm64 --enable-vulkan
 ```
 
 Frequently used arguments:
@@ -58,6 +58,44 @@ See also:
     after each OpenGL call (in Impeller), (3) does not strip symbols from
     compiled C++ code (i.e. `.so` files produced by `clang`), and (4) disables
     link-time optimization (LTO).
+
+### Enabling Impeller
+
+Impeller is always compiled, but it's not always enabled. To enable it, you need
+to either set a flag in `flutter run` (which will enable impeller for a single
+session):
+
+```bash
+# Assumes you're in the path to a Flutter app, i.e. `flutter_gallery`.
+fl run \
+  --local-engine-src-path=$ENGINE \
+  --local-engine=android_debug_unopt_arm64 \
+  --enable-impeller
+```
+
+However, if you open the app again (i.e. on the phone), or want to use another
+command or tool (i.e. Android GPU Inspector), the flag will not persist. For
+that reason, it's better to set the flag in the `AndroidManifest.xml` file:
+
+```xml
+<!-- Assumes you're modifying $APP/android/app/src/main/AndroidManifest.xml -->
+<manifest ...>
+  <application ...>
+    <meta-data
+      android:name="io.flutter.embedding.android.EnableImpeller"
+      android:value="true" />
+  </application>
+```
+
+### Enabling Vulkan
+
+Vulkan is disabled by default. To enable it, you need to pass the
+`--enable-vulkan` flag to `gn` (see above).
+
+```bash
+# Assumes you're in `$ENGINE/src`.
+./flutter/tools/gn --unopt --android --android-cpu=arm64 --enable-vulkan
+```
 
 ### Using Goma
 
@@ -93,6 +131,18 @@ And then, on a reboot:
 
 ```bash
 ./buildtools/mac-x64/goma/goma_ctl ensure_start
+```
+
+### Running demos
+
+For example, Flutter gallery:
+
+```bash
+# Assumes "fl" is an alias for your local flutter (framework) checkout.
+cd $FRAMEWORK/dev/integration_tests/flutter_gallery
+fl run \
+  --local-engine-src-path=$ENGINE \
+  --local-engine=android_debug_unopt_arm64
 ```
 
 ## Tips
@@ -191,3 +241,34 @@ See [Change Spotlight preferences on Mac](https://support.apple.com/guide/mac-he
 I disabled `Developer`, which is where I keep all my code:
 
 ![Disabled on `Developer`](https://github.com/flutter/flutter/assets/168174/e51fac53-894a-453b-a547-35b163c3d2e8)
+
+### Useful `.zshrc` addendums
+
+I put this in `$HOME/Developer/.zshrc.local` and added this to `$HOME/.zshrc`:
+
+```bash
+# Load local zshrc if it exists.
+if [ -f $HOME/Developer/.zshrc.local ]; then
+  source $HOME/Developer/.zshrc.local
+fi
+```
+
+```bash
+# Addendum .zshrc for my work development environment.
+
+# Raise limits.
+ulimit -n 200000
+ulimit -u 2048
+
+# GClient on PATH.
+export PATH="$HOME/Developer/depot_tools:$PATH"
+
+# The engine src is always in $HOME/Developer/engine/src.
+export ENGINE="$HOME/Developer/engine/src"
+
+# The framework src is always in $HOME/Developer/flutter.
+export FRAMEWORK="$HOME/Developer/flutter"
+
+# Create a local version of the flutter tool that uses the local framework src.
+alias fl="$FRAMEWORK/bin/flutter"
+```
