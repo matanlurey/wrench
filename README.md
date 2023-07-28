@@ -1,4 +1,4 @@
-# impeller-wrench
+# wrench
 
 Some personal docs/tools for developing Impeller.
 
