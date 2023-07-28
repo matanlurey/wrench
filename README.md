@@ -145,6 +145,42 @@ fl run \
   --local-engine=android_debug_unopt_arm64
 ```
 
+## Contributing
+
+### Playground tests
+
+Impeller has a "playground", or a utility for interactive experimenting with
+the Impeller rendering subsystem, with a focus on iterating on rendering
+behavior before writing tests.
+
+The playground is _not_ a Flutter app, and is minimal compared to Flutter.
+
+See also:
+
+- [Impeller: Frequently Asked Questions](https://github.com/flutter/engine/blob/main/impeller/docs/faq.md)
+- [The Impeller Playground](https://github.com/flutter/engine/blob/0713d91c2e6485062555c20bcdee04d2e1b4fad4/impeller/playground/README.md)
+
+### Running the playground
+
+```bash
+# Assumes host_debug_unopt has been built, or use whatever you want to run.
+
+# Run Impeller's unit tests, pausing on playground tests.
+$ $ENGINE/out/host_debug_unopt/impeller_unittests --enable_playground
+```
+
+![Screenshot 2023-07-27 at 5 40 51 PM](https://github.com/flutter/flutter/assets/168174/ffd033b0-f8ff-4f90-9e1f-eec548af2a6d)
+
+Note this will run _every_ Impeller test, which at the time of this writing is
+LOTS. Use [the `--gtest_filter` flag](https://google.github.io/googletest/advanced.html)
+to filter tests.
+
+```bash
+$ $ENGINE/out/host_debug_unopt/impeller_unittests \
+  --enable_playground \
+  --gtest_filter="*Gradient*"
+```
+
 ## Tips
 
 ### Change Open File Limit on Mac
