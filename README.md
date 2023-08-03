@@ -6,6 +6,20 @@ If any content in this repository is useful to you, feel free to use it. As I'm
 super new, it's hard to understand if any of this is _generally_ useful, and if
 it is I'll move it to a more appropriate place.
 
+## Why Impeller
+
+[Skia](https://skia.org/) is a 2D graphics library written in C++. It is used
+by Flutter to render graphics on the screen. Skia is a very large library, and
+supports many different platforms and use cases. Flutter uses a subset of Skia.
+
+For example, Skia [generates shaders on the fly](https://crsrc.org/c/cc/paint/paint_shader.cc;l=83-105)
+for gradients, generating their own `SkSl` (Skia Shader Language) code, and
+(at runtime) translate that into the GPU-specific shader language, and only then
+compile and link the shader.
+
+The [equivalent code in Impeller](https://github.com/flutter/engine/blob/64e88e8870adf8fcdc8fd602a669fe6aea38d18b/impeller/entity/shaders/linear_gradient_fill.frag) is compiled ahead of time
+for the target GPU.
+
 ## Building the engine
 
 The engine is built using [`gn`](https://gn.googlesource.com/gn/), which is a
@@ -30,7 +44,11 @@ Common invocations:
 # Assumes you're in `$ENGINE/src`.
 
 # Build a host (i.e. on my Mac, a macOS binary) debug build.
-./flutter/tools/gn --unopt
+#
+# Note the "--mac-cpu arm64" is not required, but without it on M1 Macs the x64
+# build is used, which is slower because it goes through Rosetta (the x86_64
+# emulator).
+./flutter/tools/gn --unopt --mac-cpu arm64
 
 # Build an android debug build with Vulkan enabled and Vulkan validation layers.
 ./flutter/tools/gn --unopt --android --android-cpu=arm64 --enable-vulkan
@@ -116,21 +134,21 @@ solutions = [
 ]
 ```
 
-In `$ENGINE/buildtools/mac-x64/goma` (or similar), you should have `goma_auth`:
+In `$ENGINE/buildtools/mac-x64/goma` (or similar), you should have `goma_ctl.py`:
 
 ```bash
-$ ./buildtools/mac-x64/goma/goma_auth status
+$ ./buildtools/mac-x64/goma/goma_ctl.py status
 Login as ***@***.***
 Ready to use Goma service at https://goma.chromium.org
 
 # If needed (i.e. above command fails), run:
-$ ./buildtools/mac-x64/goma/goma_auth login
+$ ./buildtools/mac-x64/goma/goma_auth.py login
 ```
 
 And then, on a reboot:
 
 ```bash
-./buildtools/mac-x64/goma/goma_ctl ensure_start
+./buildtools/mac-x64/goma/goma_ctl.py ensure_start
 ```
 
 ### Running demos
@@ -163,10 +181,11 @@ See also:
 ### Running the playground
 
 ```bash
-# Assumes host_debug_unopt has been built, or use whatever you want to run.
+# Build the playground.
+ninja -C out/host_debug_unopt_arm64 impeller_unittests
 
 # Run Impeller's unit tests, pausing on playground tests.
-$ $ENGINE/out/host_debug_unopt/impeller_unittests --enable_playground
+$ $ENGINE/out/host_debug_unopt_arm64/impeller_unittests --enable_playground
 ```
 
 ![Screenshot 2023-07-27 at 5 40 51 PM](https://github.com/flutter/flutter/assets/168174/ffd033b0-f8ff-4f90-9e1f-eec548af2a6d)
@@ -176,7 +195,7 @@ LOTS. Use [the `--gtest_filter` flag](https://google.github.io/googletest/advanc
 to filter tests.
 
 ```bash
-$ $ENGINE/out/host_debug_unopt/impeller_unittests \
+$ $ENGINE/out/host_debug_unopt_arm64/impeller_unittests \
   --enable_playground \
   --gtest_filter="*Gradient*"
 ```
