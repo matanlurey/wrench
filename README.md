@@ -115,6 +115,17 @@ Vulkan is disabled by default. To enable it, you need to pass the
 ./flutter/tools/gn --unopt --android --android-cpu=arm64 --enable-vulkan
 ```
 
+It's worth noting to get proper IDE (i.e. VSCode) completion, i.e. for files
+that directly or indirectly import Vulkan headers, you need your `clangd`'s
+`compile-commands-dir` to point to a directory where Vulkan headers were
+included:
+
+```json
+"clangd.arguments": [
+  "--compile-commands-dir=/Users/%NAME%/Developer/engine/src/out/android_debug_unopt_arm64"
+]
+```
+
 ### Using Goma
 
 [Goma](https://chromium.googlesource.com/infra/goma/client/) is a distributed
@@ -151,7 +162,7 @@ And then, on a reboot:
 ./buildtools/mac-x64/goma/goma_ctl.py ensure_start
 ```
 
-### Running demos
+### Running Demos
 
 For example, Flutter gallery:
 
@@ -161,6 +172,47 @@ cd $FRAMEWORK/dev/integration_tests/flutter_gallery
 fl run \
   --local-engine-src-path=$ENGINE \
   --local-engine=android_debug_unopt_arm64
+```
+
+### Using VSCode
+
+Here is my `settings.json` (`$ENGINE/.vscode/settings.json`):
+
+```json
+{
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "[cpp]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "[objective-cpp]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "search.followSymlinks": true,
+  "search.quickOpen.includeHistory": true,
+  "search.quickOpen.includeSymbols": false,
+  "search.useIgnoreFiles": false,
+  "search.exclude": {
+    "out/**": true
+  },
+  "task.quickOpen.showAll": true,
+  "task.quickOpen.skip": false,
+  "clangd.path": "/Users/%NAME%/Developer/engine/src/buildtools/mac-arm64/clang/bin/clangd",
+  "clangd.arguments": [
+    "--compile-commands-dir=/Users/%NAME%/Developer/engine/src/out/android_debug_unopt_arm64"
+  ],
+  "clang-format.executable": "/Users/%NAME%/Developer/engine/src/buildtools/mac-arm64/clang/bin/clang-format",
+  "dart.onlyAnalyzeProjectsWithOpenFiles": true,
+  "[dart]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "editor.suggest.insertMode": "replace",
+    "editor.defaultFormatter": "Dart-Code.dart-code",
+    "editor.inlayHints.enabled": "offUnlessPressed",
+    "editor.formatOnSave": false,
+    "editor.formatOnType": false
+  }
+}
 ```
 
 ## Contributing
