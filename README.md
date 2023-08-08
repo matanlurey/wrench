@@ -400,9 +400,14 @@ Unexpected Kernel Format Version 107 (expected 106)
 #0      BinaryBuilder.readComponent.<anonymous closure>
 ```
 
+This happens because the Dart SDK on the physical device (i.e. Android) does not
+match the SDK running on the host (i.e. `frontend_server`).
+
 To handle this, there are 3 options:
 
 1. Interactive rebase `$ENGINE` to the commit im `$FRAMEWORK/bin/internal/engine.version`.
 1. Checkout `$FRAMEWORK` to a different commit with a compatible engine.
 1. **Hack**: Update `$FRAMEWORK/bin/internal/engine.version` to point to the
    commit in `$ENGINE` you want to use.
+
+Then, make sure to rebuild both engines (host and physical device).
