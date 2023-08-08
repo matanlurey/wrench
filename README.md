@@ -379,3 +379,30 @@ export FRAMEWORK="$HOME/Developer/flutter"
 # Create a local version of the flutter tool that uses the local framework src.
 alias fl="$FRAMEWORK/bin/flutter"
 ```
+
+### Handling Engine <> Tool Misalignment
+
+Typically, the engine and framework are kept in sync. However, sometimes they
+get out of sync. This is usually because the engine is ahead of the framework
+(i.e. a Dart SDK roll), or because the framework was pinned to an older engine
+([example](https://github.com/flutter/flutter/commit/948900979050838b1f91701d24d89a7ce4d3fbf7)).
+
+For example, I tried `fl run` and got this error:
+
+```bash
+$ fl run \
+  --local-engine-src-path=$ENGINE \
+  --local-engine=android_debug_unopt_arm64 \
+  --enable-impeller
+
+Unhandled exception:
+Unexpected Kernel Format Version 107 (expected 106)
+#0      BinaryBuilder.readComponent.<anonymous closure>
+```
+
+To handle this, there are 3 options:
+
+1. Interactive rebase `$ENGINE` to the commit im `$FRAMEWORK/bin/internal/engine.version`.
+1. Checkout `$FRAMEWORK` to a different commit with a compatible engine.
+1. **Hack**: Update `$FRAMEWORK/bin/internal/engine.version` to point to the
+   commit in `$ENGINE` you want to use.
