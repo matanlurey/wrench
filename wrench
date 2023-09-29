@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+
+# Forwards the arguments to the wrench script (dart run wrench ...)
+dart run bin/wrench.dart "$@"
